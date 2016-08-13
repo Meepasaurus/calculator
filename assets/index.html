@@ -13,37 +13,38 @@
 	<main class="wrapper">
 		<section class="calc-container grey lighten-3 z-depth-1">
 			<section class="output-container">
-			<p id="output" class="flow-text">&nbsp;</p>
+			<p id="output-top" class="flow-text white-text black lighten-2">&nbsp;</p>
+			<p id="output-bottom" class="flow-text white">&nbsp;</p>
 			</section>
 			<div class="calc-row">
-				<a id="ac" class="waves-effect waves-light btn-large red darken-2">AC</a>
-				<a id="ce" class="waves-effect waves-light btn-large red darken-2">CE</a>
-				<a id="backspace" class="waves-effect waves-light btn-large red darken-2"><div class="backspace"></div></a>
-				<a id="divide" class="waves-effect waves-light btn-large grey darken-3" input-data="/">&divide;</a>
+				<a id="ac" class="waves-effect waves-light btn-large red darken-2 mod" data-input="ac">AC</a>
+				<a id="ce" class="waves-effect waves-light btn-large red darken-2 mod" data-input="ce">CE</a>
+				<a id="backspace" class="waves-effect waves-light btn-large red darken-2 mod" data-input="backspace"><div class="backspace"></div></a>
+				<a id="divide" class="waves-effect waves-light btn-large grey darken-3 mod" data-input="/">&divide;</a>
 			</div>
 			<div class="calc-row">
-				<a id="seven" class="waves-effect waves-light btn-large grey input" data-input="7">7</a>
-				<a id="eight" class="waves-effect waves-light btn-large grey input" data-input="8">8</a>
-				<a id="nine" class="waves-effect waves-light btn-large grey input" data-input="9">9</a>
-				<a id="times" class="waves-effect waves-light btn-large grey darken-3" data-input="*">&Cross;</a>
+				<a id="seven" class="waves-effect waves-light btn-large grey num">7</a>
+				<a id="eight" class="waves-effect waves-light btn-large grey num">8</a>
+				<a id="nine" class="waves-effect waves-light btn-large grey num">9</a>
+				<a id="times" class="waves-effect waves-light btn-large grey darken-3 mod" data-input="*">&Cross;</a>
 			</div>
 			<div class="calc-row">
-				<a id="four" class="waves-effect waves-light btn-large grey input" data-input="4">4</a>
-				<a id="five" class="waves-effect waves-light btn-large grey input" data-input="5">5</a>
-				<a id="six" class="waves-effect waves-light btn-large grey input" data-input="6">6</a>
-				<a id="minus" class="waves-effect waves-light btn-large grey darken-3" data-input="-">&minus;</a>
+				<a id="four" class="waves-effect waves-light btn-large grey num">4</a>
+				<a id="five" class="waves-effect waves-light btn-large grey num">5</a>
+				<a id="six" class="waves-effect waves-light btn-large grey num">6</a>
+				<a id="minus" class="waves-effect waves-light btn-large grey darken-3 mod" data-input="-">&minus;</a>
 			</div>
 			<div class="calc-row">
-				<a id="one" class="waves-effect waves-light btn-large grey input" data-input="1">1</a>
-				<a id="two" class="waves-effect waves-light btn-large grey input" data-input="2">2</a>
-				<a id="three" class="waves-effect waves-light btn-large grey input" data-input="3">3</a>
-				<a id="plus" class="waves-effect waves-light btn-large grey darken-3 input" data-input="+">&plus;</a>
+				<a id="one" class="waves-effect waves-light btn-large grey num">1</a>
+				<a id="two" class="waves-effect waves-light btn-large grey num">2</a>
+				<a id="three" class="waves-effect waves-light btn-large grey num">3</a>
+				<a id="plus" class="waves-effect waves-light btn-large grey darken-3 mod" data-input="+">&plus;</a>
 			</div>
 			<div class="calc-row">
-				<a id="negative" class="waves-effect waves-light btn-large grey">&plus;/&minus;</a>
-				<a id="zero" class="waves-effect waves-light btn-large grey input" data-input="0">0</a>
-				<a id="decimal" class="waves-effect waves-light btn-large grey input" data-input=".">.</a>
-				<a id="equals" class="waves-effect waves-light btn-large">&equals;</a>
+				<a id="negative" class="waves-effect waves-light btn-large grey mod" data-input="+-">&plus;/&minus;</a>
+				<a id="zero" class="waves-effect waves-light btn-large grey num">0</a>
+				<a id="decimal" class="waves-effect waves-light btn-large grey mod" data-input=".">.</a>
+				<a id="equals" class="waves-effect waves-light btn-large mod" data-input="=">&equals;</a>
 			</div>
 		</section>
 		<section class="about-text">
