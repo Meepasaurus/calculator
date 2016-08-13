@@ -123,8 +123,8 @@ $(document).ready(function(){
 		switch(e.which){
 			case 8:
 				//prevent browser going back warning from Chrome, and going back in FF
-				e.preventDefault;
 				myCalculator.backspace();
+				return false;
 				break;
 			case 46:
 				myCalculator.allClear();
