@@ -5,11 +5,49 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Calculator</title>
+	<link rel="stylesheet" href="materialize.css"/>
 	<link rel="stylesheet" href="index.css"/>
 </head>
 <body>
-	
+	<main class="wrapper">
+		<section class="calc-container grey lighten-3 z-depth-1">
+			<div class="calc-row">
+				<a class="waves-effect waves-light btn-large red darken-2">CE</a>
+				<a class="waves-effect waves-light btn-large red darken-2">C</a>
+				<a class="waves-effect waves-light btn-large red darken-2"><div class="backspace"></div></a>
+				<a class="waves-effect waves-light btn-large grey darken-3">&divide;</a>
+			</div>
+			<div class="calc-row">
+				<a class="waves-effect waves-light btn-large grey">7</a>
+				<a class="waves-effect waves-light btn-large grey">8</a>
+				<a class="waves-effect waves-light btn-large grey">9</a>
+				<a class="waves-effect waves-light btn-large grey darken-3">x</a>
+			</div>
+			<div class="calc-row">
+				<a class="waves-effect waves-light btn-large grey">4</a>
+				<a class="waves-effect waves-light btn-large grey">5</a>
+				<a class="waves-effect waves-light btn-large grey">6</a>
+				<a class="waves-effect waves-light btn-large grey darken-3">-</a>
+			</div>
+			<div class="calc-row">
+				<a class="waves-effect waves-light btn-large grey">1</a>
+				<a class="waves-effect waves-light btn-large grey">2</a>
+				<a class="waves-effect waves-light btn-large grey">3</a>
+				<a class="waves-effect waves-light btn-large grey darken-3">+</a>
+			</div>
+			<div class="calc-row">
+				<a class="waves-effect waves-light btn-large grey">+-</a>
+				<a class="waves-effect waves-light btn-large grey">0</a>
+				<a class="waves-effect waves-light btn-large grey">.</a>
+				<a class="waves-effect waves-light btn-large">=</a>
+			</div>
+		</section>
+		<section class="about-text">
+			<p class="flow-text grey-text text-darken-3">It's a calculator.<br>Text shortcuts will go here.</p>
+		</section>
+	</main>
 	<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+	<script src="materialize.min.js"></script>
 	<script src="index.js"></script>
 </body>
 </html>
