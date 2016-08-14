@@ -7,6 +7,21 @@ body {
 	font-family: 'Roboto', sans-serif;
 }
 
+#toast-container {
+  top: auto !important;
+  right: auto !important;
+  bottom: 10%;
+  left:7%;
+
+  /*
+  #toast-container {
+  top: auto !important;
+  right: auto !important;
+  bottom: 10%;
+  left:7%;  
+  */
+}
+
 .wrapper {
 	max-width: 900px;
 	width: 100%;
@@ -58,7 +73,7 @@ body {
 }
 
 .btn-large {
-	margin: 6px 3px;
+	margin: 3px;
 	padding: 0;
 	max-width: 50px;
 	width: 100%;
@@ -66,6 +81,10 @@ body {
 	font-size: 26px;
 	text-align: center;
 	text-transform: none;
+}
+
+.btn-wide {
+	max-width: 106px;
 }
 
 .backspace {
@@ -86,5 +105,12 @@ body {
 	p {
 		margin: 0;
 		padding: 0;
+	}
+}
+
+@media screen and (max-width: 507px){
+	.calc-container {
+		padding-left: 0;
+		padding-right: 0;
 	}
 }

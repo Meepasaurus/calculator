@@ -4,10 +4,14 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 	var precision = numberPrecision, //number of decimal places to format calculations to, 14 recommended
 		outputTop = outputTopDOM, //previous calculation
 		outputBottom = outputBottomDOM, //current input/answer
-		txtTop = '',
+		txtTop = '', //for internal calculations
 		txtBottom = '',
 		prettyTop = '', //formatted operators with html entities for better display
-		prettyBottom = '';
+		prettyBottom = '',
+		stripEndArr = ['+', '-', '*', '/', '.'], //ignored input endings
+		unclosedParens = 0, //parenthesis counter
+		canClearWithNum = false, //used to clear input when typing a number immediately after a calculation
+		canClear = false; //used to clear input after an error
 
 	return {
 		printTopOutput : function(){
@@ -19,38 +23,76 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 		},
 
 		inputNum: function(num){
+			if (canClear){
+				this.clearEntry();
+				canClear = false;
+				canClearWithNum = false;
+			} else if (canClearWithNum){
+				this.clearEntry();
+				canClearWithNum = false;
+			}
+
+			txtBottom += num;
+
+			/*
 			//prevent leading zeroes
 			if (txtBottom.charAt(0) === '0' && txtBottom.indexOf('.') === -1){
 				txtBottom = num;
 			} else {
 				txtBottom += num;
 			}
+			*/
 
 			this.printBottomOutput();
 		},
 
 		calculate: function(){
+			//remove trailing operations
+			while (stripEndArr.indexOf((txtBottom.charAt(txtBottom.length-1))) !== -1 ){
+				txtBottom = txtBottom.slice(0, -1);
+			}
+
+			//ADD CHECKS FOR UNCLOSED PARENS HERE
+
 			txtTop = txtBottom;
-			
+
 			//eval on empty string throws an error
 			if (txtBottom !== ''){
-				txtBottom = Number(Number(eval(txtBottom).toFixed(14)).toPrecision(16)).toString();
+				try {
+					var answer = Number(Number(eval(txtBottom).toFixed(14)).toPrecision(16)).toString();
+					if (isNaN(answer)){
+						txtBottom = 'That\'s undefined.';
+						canClear = true;
+					} else {
+						txtBottom = answer;
+					}
+				} catch(err) {
+					txtBottom = 'Invalid input.';
+					canClear = true;
+				}
 			}
 
 			this.printTopOutput();
 			this.printBottomOutput();
+			canClearWithNum = true;
 		},
 
 		operate: function(operation){
+			if (canClear){
+				txtBottom = '';
+				canClear = false;
+			}
+
 			var prevChar = txtBottom.charAt(txtBottom.length-1);
 
 			switch(operation){
 				case '+':
 					switch(prevChar){
+						case '':
 						case '+':
 							break;
 						case '-':
-							txtBottom = txtBottom.slice(0, -1)+'+';
+							txtBottom = txtBottom.slice(0, -1) + '+';
 							break;
 						default:
 							txtBottom += '+';
@@ -63,7 +105,7 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 						case '-':
 							break;
 						case '+':
-							txtBottom = txtBottom.slice(0, -1)+'-';
+							txtBottom = txtBottom.slice(0, -1) + '-';
 							break;
 						default:
 							txtBottom += '-';
@@ -73,6 +115,20 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 				
 				case '*':
 					switch(prevChar){
+						case '':
+							//ADD POP-UP WARNING HERE
+							break;
+						case '+':
+							txtBottom = txtBottom.slice(0, -1) + '*';
+							break;
+						case '-':
+							txtBottom = txtBottom.slice(0, -1) + '*';
+							break;
+						case '*':
+							break;
+						case '/':
+							txtBottom = txtBottom.slice(0, -1) + '*';
+							break;
 						default:
 							txtBottom += '*';
 							break;
@@ -81,15 +137,35 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 				
 				case '/':
 					switch(prevChar){
+						case '':
+							//ADD POPUP WARNING HERE
+							break;
+						case '+':
+							txtBottom = txtBottom.slice(0, -1) + '/';
+							break;
+						case '-':
+							txtBottom = txtBottom.slice(0, -1) + '/';
+							break;
+						case '/':
+							break;
+						case '*':
+							txtBottom = txtBottom.slice(0, -1) + '/';
+							break;
 						default:
 							txtBottom += '/';
 							break;
 					}
 					break;
+
+				case '.':
+					this.decimal();
+					break;
 				
 				default:
 					break;
 			}
+
+			canClearWithNum = false;
 
 			this.printTopOutput();
 			this.printBottomOutput();
@@ -98,30 +174,42 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 		decimal: function(){
 			//only allow 1 decimal point per number
 			//TODO
+			console.log(canClearWithNum);
+			if (canClearWithNum){
+				txtBottom = '';
+			}
 
 			txtBottom += ".";
 			this.printBottomOutput(txtBottom);
 		},
 
 		allClear: function(){
+			this.clearEntry();
 			txtTop = '';
-			txtBottom = '';
 			this.printTopOutput(txtTop);
-			this.printBottomOutput(txtBottom);
 		},
 
 		clearEntry: function(){
+			canClear = false;
+			canClearWithNum = false;
 			txtBottom = '';
 			this.printBottomOutput(txtBottom);
 		},
 
 		backspace: function(){
 			if (txtBottom !== ''){
-				//check if +-Infinity to delete the entire word
-				if(txtBottom.charAt(txtBottom.length-1) === 'y'){
+				if (canClear){
+					canClear = false;
 					txtBottom = '';
 				} else {
-					txtBottom = txtBottom.slice(0, -1);	
+					//check if +-Infinity to delete the entire word
+					if (txtBottom.charAt(txtBottom.length-1) === 'y'){
+						txtBottom = '';
+						canClearWithNum = false;
+					} else {
+						txtBottom = txtBottom.slice(0, -1);
+						canClearWithNum = (txtBottom.charAt(txtBottom.length-1) === 'y') ? true : false;
+					}
 				}
 				this.printBottomOutput(txtBottom);
 			}
@@ -152,13 +240,11 @@ $(document).ready(function(){
 			case 'backspace':
 				myCalculator.backspace();
 				break;
-			case '.':
-				myCalculator.decimal();
-				break;
 			case '+':
 			case '-':
 			case '*':
 			case '/':
+			case '.':
 				myCalculator.operate(dataInput);
 				break;
 			case '=':
