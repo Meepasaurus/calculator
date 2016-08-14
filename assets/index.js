@@ -7,30 +7,78 @@ var Calculator = function(outputTopDOM, outputBottomDOM){
 		txtBottom = '';
 
 	return {
-		printTopOutput : function(output){
-			outputTop.html(output === '' ? '&nbsp;' : '&gt;' + output);
+		printTopOutput : function(){
+			outputTop.html(txtTop === '' ? '&nbsp;' : '&gt;' + txtTop);
 		},
 
-		printBottomOutput : function(output){
-			outputBottom.html(output === '' ? '&nbsp;' : output);
+		printBottomOutput : function(){
+			outputBottom.html(txtBottom === '' ? '&nbsp;' : txtBottom);
 		},
 
 		inputNum: function(num){
-			txtBottom += num;
-			this.printBottomOutput(txtBottom);
+			//prevent leading zeroes
+			if (txtBottom.charAt(0) === '0' && txtBottom.indexOf('.') === -1){
+				txtBottom = num;
+			} else {
+				txtBottom += num;	
+			}
+			this.printBottomOutput();
 		},
 
 		calculate: function(){
-			txtTop = txtBottom;
-			txtBottom = '';
-			this.printTopOutput(txtTop);
-			//answer = eval(input);
-			//input = answer.toString();
-			this.printBottomOutput(txtBottom);
+			//check if there is an operator entered
+			if (txtTop.charAt(txtTop.length-1) === '+'){
+				//check if any input
+				if (txtBottom !== ''){
+					var txtTemp = txtBottom;
+					txtBottom = eval(txtTop + txtBottom).toString();
+					txtTop = txtTop + txtTemp;
+				} else {
+					//just display the number up top as the answer
+					txtTop = txtTop.slice(0,-1);
+					txtBottom = txtTop;
+				}
+			} else {
+				//calculate the top
+				//add a zero if missing after decimal
+				txtTop = txtBottom.charAt(txtBottom.length-1) === '.' ? txtBottom + '0' : txtBottom;
+				txtBottom = txtTop;
+			}
+
+			this.printTopOutput();
+			this.printBottomOutput();
 		},
 
-		add: function(){
+		operate: function(operator){
+			//ADD TRAILING ZEROES CHECK
+			
+			if (txtTop.charAt(txtTop.length-1) === operator){
+			//add a zero if missing after decimal
+			txtTop = txtTop.charAt(txtTop.length-1) === '.' ? txtBottom + '0+' : txtBottom + operator;
+			}
+			//if top has an operand on the end, calculate it 
+			//console.log(txtTop.charAt(txtTop.length-1));
+			//if (txtTop.charAt(txtTop.length-1) === operator){
+			//	this.calculate();
+			//}
 
+			txtBottom = '';
+
+			this.printTopOutput();
+			this.printBottomOutput();
+		},
+
+		decimal: function(){
+			//only allow 1 decimal point
+			if (txtBottom.indexOf('.') === -1){
+				//add a leading zero if empty
+				if (txtBottom === ''){
+					txtBottom = '0.';
+				} else {
+					txtBottom += ".";
+				}
+				this.printBottomOutput(txtBottom);
+			}
 		},
 
 		allClear: function(){
@@ -48,19 +96,6 @@ var Calculator = function(outputTopDOM, outputBottomDOM){
 		backspace: function(){
 			if (txtBottom !== ''){
 				txtBottom = txtBottom.slice(0, -1);
-				this.printBottomOutput(txtBottom);
-			}
-		},
-
-		decimal: function(){
-			//only allow 1 decimal point
-			if (txtBottom.indexOf('.') === -1){
-				//add a leading zero if empty
-				if (txtBottom === ''){
-					txtBottom = '0.';
-				} else {
-					txtBottom += ".";
-				}
 				this.printBottomOutput(txtBottom);
 			}
 		}
@@ -95,7 +130,7 @@ $(document).ready(function(){
 
 	//all other buttons
 	$('.mod').on('click', function(){
-		console.log($(this).data('input'));
+		//console.log($(this).data('input'));
 		switch($(this).data('input')){
 			case 'ac':
 				myCalculator.allClear();
@@ -110,7 +145,7 @@ $(document).ready(function(){
 				myCalculator.decimal();
 				break;
 			case '+':
-				myCalculator.add();
+				myCalculator.operate('+');
 				break;
 			case '=':
 				myCalculator.calculate();
@@ -119,13 +154,12 @@ $(document).ready(function(){
 	});
 
 	$(document).on('keydown', function(e){
-		console.log('keydown ' + e.which);
+		//console.log('keydown ' + e.which);
 		switch(e.which){
 			case 8:
 				//prevent browser going back warning from Chrome, and going back in FF
 				myCalculator.backspace();
 				return false;
-				break;
 			case 46:
 				myCalculator.allClear();
 				break;
@@ -135,10 +169,10 @@ $(document).ready(function(){
 
 	//keyboard
 	$(document).on('keypress', function(e){
-		console.log('keypress ' + e.which);
+		//console.log('keypress ' + e.which);
 		switch(e.which){
-			//prevent browser from going back in FF
 			case 8:
+				//prevent browser from going back in FF
 				e.preventDefault();
 				break;
 			case 43:
@@ -151,7 +185,6 @@ $(document).ready(function(){
 				$('#zero').click();
 				break;
 			case 49:
-				console.log('one');
 				$('#one').click();
 				break;
 			case 50:
