@@ -1,10 +1,13 @@
 'use strict';
 
-var Calculator = function(outputTopDOM, outputBottomDOM){
-	var outputTop = outputTopDOM, //previous calculation
+var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
+	var precision = numberPrecision, //number of decimal places to format calculations to, 14 recommended
+		outputTop = outputTopDOM, //previous calculation
 		outputBottom = outputBottomDOM, //current input/answer
 		txtTop = '',
-		txtBottom = '';
+		txtBottom = '',
+		prettyTop = '', //formatted operators with html entities for better display
+		prettyBottom = '';
 
 	return {
 		printTopOutput : function(){
@@ -20,65 +23,84 @@ var Calculator = function(outputTopDOM, outputBottomDOM){
 			if (txtBottom.charAt(0) === '0' && txtBottom.indexOf('.') === -1){
 				txtBottom = num;
 			} else {
-				txtBottom += num;	
+				txtBottom += num;
 			}
+
 			this.printBottomOutput();
 		},
 
 		calculate: function(){
-			//check if there is an operator entered
-			if (txtTop.charAt(txtTop.length-1) === '+'){
-				//check if any input
-				if (txtBottom !== ''){
-					var txtTemp = txtBottom;
-					txtBottom = eval(txtTop + txtBottom).toString();
-					txtTop = txtTop + txtTemp;
-				} else {
-					//just display the number up top as the answer
-					txtTop = txtTop.slice(0,-1);
-					txtBottom = txtTop;
-				}
-			} else {
-				//calculate the top
-				//add a zero if missing after decimal
-				txtTop = txtBottom.charAt(txtBottom.length-1) === '.' ? txtBottom + '0' : txtBottom;
-				txtBottom = txtTop;
+			txtTop = txtBottom;
+			
+			//eval on empty string throws an error
+			if (txtBottom !== ''){
+				txtBottom = Number(Number(eval(txtBottom).toFixed(14)).toPrecision(16)).toString();
 			}
 
 			this.printTopOutput();
 			this.printBottomOutput();
 		},
 
-		operate: function(operator){
-			//ADD TRAILING ZEROES CHECK
-			
-			if (txtTop.charAt(txtTop.length-1) === operator){
-			//add a zero if missing after decimal
-			txtTop = txtTop.charAt(txtTop.length-1) === '.' ? txtBottom + '0+' : txtBottom + operator;
-			}
-			//if top has an operand on the end, calculate it 
-			//console.log(txtTop.charAt(txtTop.length-1));
-			//if (txtTop.charAt(txtTop.length-1) === operator){
-			//	this.calculate();
-			//}
+		operate: function(operation){
+			var prevChar = txtBottom.charAt(txtBottom.length-1);
 
-			txtBottom = '';
+			switch(operation){
+				case '+':
+					switch(prevChar){
+						case '+':
+							break;
+						case '-':
+							txtBottom = txtBottom.slice(0, -1)+'+';
+							break;
+						default:
+							txtBottom += '+';
+							break;
+					}
+					break;
+				
+				case '-':
+					switch(prevChar){
+						case '-':
+							break;
+						case '+':
+							txtBottom = txtBottom.slice(0, -1)+'-';
+							break;
+						default:
+							txtBottom += '-';
+							break;
+					}
+					break;
+				
+				case '*':
+					switch(prevChar){
+						default:
+							txtBottom += '*';
+							break;
+					}
+					break;
+				
+				case '/':
+					switch(prevChar){
+						default:
+							txtBottom += '/';
+							break;
+					}
+					break;
+				
+				default:
+					break;
+			}
 
 			this.printTopOutput();
 			this.printBottomOutput();
 		},
 
 		decimal: function(){
-			//only allow 1 decimal point
-			if (txtBottom.indexOf('.') === -1){
-				//add a leading zero if empty
-				if (txtBottom === ''){
-					txtBottom = '0.';
-				} else {
-					txtBottom += ".";
-				}
-				this.printBottomOutput(txtBottom);
-			}
+			//only allow 1 decimal point per number
+			//TODO
+
+			txtBottom += ".";
+			this.printBottomOutput(txtBottom);
 		},
 
 		allClear: function(){
@@ -95,33 +117,20 @@ var Calculator = function(outputTopDOM, outputBottomDOM){
 
 		backspace: function(){
 			if (txtBottom !== ''){
-				txtBottom = txtBottom.slice(0, -1);
+				//check if +-Infinity to delete the entire word
+				if(txtBottom.charAt(txtBottom.length-1) === 'y'){
+					txtBottom = '';
+				} else {
+					txtBottom = txtBottom.slice(0, -1);	
+				}
 				this.printBottomOutput(txtBottom);
 			}
 		}
 	};
 };
 
-function decimalPlaces(num) {
-  	//adapted from SO - Mike Samuel
-  	var match = (''+num).match(/(\.(\d+))/);
-  	if (!match) { return 0; }
-  	return Math.max(
-       0,
-       // Number of digits right of decimal point.
-       (match[2] ? match[2].length : 0)
-	);
-}
-
 $(document).ready(function(){
-	console.log(0.7+0.1);
-
-	var scaled = ((decimalPlaces(0.3)*10*0.7)+(decimalPlaces(0.1)*10*0.1));
-	console.log(scaled);
-
-	console.log(scaled / (decimalPlaces(0.2)*10));
-
-	var myCalculator = new Calculator($('#output-top'), $('#output-bottom'));
+	var myCalculator = new Calculator(14, $('#output-top'), $('#output-bottom'));
 
 	//0-9
 	$('.num').on('click', function(){
@@ -131,7 +140,9 @@ $(document).ready(function(){
 	//all other buttons
 	$('.mod').on('click', function(){
 		//console.log($(this).data('input'));
-		switch($(this).data('input')){
+		var dataInput = $(this).data('input');
+
+		switch(dataInput){
 			case 'ac':
 				myCalculator.allClear();
 				break;
@@ -145,7 +156,10 @@ $(document).ready(function(){
 				myCalculator.decimal();
 				break;
 			case '+':
-				myCalculator.operate('+');
+			case '-':
+			case '*':
+			case '/':
+				myCalculator.operate(dataInput);
 				break;
 			case '=':
 				myCalculator.calculate();
@@ -169,17 +183,29 @@ $(document).ready(function(){
 
 	//keyboard
 	$(document).on('keypress', function(e){
-		//console.log('keypress ' + e.which);
+		console.log('keypress ' + e.which);
 		switch(e.which){
 			case 8:
 				//prevent browser from going back in FF
 				e.preventDefault();
 				break;
+			case 120:
+			case 42:
+				$('#multiply').click();
+				break;
 			case 43:
 				$('#plus').click();
 				break;
+			case 45:
+				$('#minus').click();
+				break;
 			case 46:
 				$('#decimal').click();
+				break;
+			case 47:
+				$('#divide').click();
+				//prevent searchbar in FF
+				e.preventDefault();
 				break;
 			case 48:
 				$('#zero').click();
