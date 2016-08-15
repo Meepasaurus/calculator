@@ -1,38 +1,24 @@
 JS Calculator [WIP]
 ===================
 
--After doing a bit of research on floating-point rounding errors, I decided to use a precision of 14 decimal places. This can be set when creating the Calculator object. The total number of digits is limited to 16. `0.1 + 0.2 equals 0.3` instead of JavaScript's usual output of `0.30000000000000004`.
+- After doing a bit of research on floating-point rounding errors, I decided to use a precision of 14 decimal places. This can be set when creating the Calculator object. The total number of digits is limited to 16. `0.1 + 0.2 = 0.3` instead of JavaScript's usual output of `0.30000000000000004`.
 
--Prevents leading operators except `-` and removes trailing operators. Avoids common input errors by overwriting illegal adjacent operations such as `1*/`. Rarer input errors, for example by typing `1*+/2` print `Invalid input.` to avoid confusing the user with too many automatic input edits.
+- Prevents leading operations except `-` and removes trailing operations. Avoids common input errors by overwriting illegal adjacent operations such as `1*/`, and only allows one `.` per number. Rarer input errors (for example, by typing `1*+/2`) print `Invalid input.` to avoid confusing the user with too many automatic input edits.
 
--Calculations resulting in or using 'Infinity' are allowed, and backspace deletes the entire word from input.
+- Calculations such as `0/0` that result in `NaN` print `That's undefined.`.
 
--Keyboard support tested for IE, FF, and Chrome.
+- Calculations resulting in or using 'Infinity' are allowed, and backspace deletes the entire word from input.
 
--includes Gulp build scripts
+- Keyboard support tested for IE, FF, and Chrome.
+
+- Includes Gulp build scripts.
 
 TODO
 ----
 
--fix e+(not a number)
-
--fix leading zeroes
-
--use/format pretty text output for operators
-
--fix responsive containers to maintain ratio
-
--fix decimals to allow multiple in input (one per number)
-
--set input length
-
--add toasts for max input, invalid first input
+- fix leading zeros
 
 Extra TODO
 ----------
 
--add parenthesis
-
--add additional operations
-
--add history box
+- add additional operations ((, ), ^, sqrt(x), squared(x), )

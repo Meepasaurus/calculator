@@ -1,25 +1,33 @@
 'use strict';
 
-var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
+var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, historyDOM){
 	var precision = numberPrecision, //number of decimal places to format calculations to, 14 recommended
 		outputTop = outputTopDOM, //previous calculation
 		outputBottom = outputBottomDOM, //current input/answer
+		history = historyDOM,
 		txtTop = '', //for internal calculations
 		txtBottom = '',
-		prettyTop = '', //formatted operators with html entities for better display
-		prettyBottom = '',
 		stripEndArr = ['+', '-', '*', '/', '.'], //ignored input endings
 		unclosedParens = 0, //parenthesis counter
+		canDecimal = true, //can input a .
 		canClearWithNum = false, //used to clear input when typing a number immediately after a calculation
 		canClear = false; //used to clear input after an error
 
 	return {
-		printTopOutput : function(){
-			outputTop.html(txtTop === '' ? '&nbsp;' : '&gt;' + txtTop);
-		},
-
-		printBottomOutput : function(){
-			outputBottom.html(txtBottom === '' ? '&nbsp;' : txtBottom);
+		printOutput : function(isTop, printHistory){ //both booleans
+			if (isTop){
+				//print top
+				outputTop.html(txtTop === '' ? '&nbsp;' : '&gt;' + txtTop);
+				if (printHistory){
+					history.append($('<p class="flow-text">').html(outputTop.html()));
+				}
+			} else {
+				//print bottom
+				outputBottom.html(txtBottom === '' ? '&nbsp;' : txtBottom);
+				if (printHistory){
+					history.append($('<p class="flow-text">').html(outputBottom.html()));
+				}
+			}
 		},
 
 		inputNum: function(num){
@@ -43,7 +51,7 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 			}
 			*/
 
-			this.printBottomOutput();
+			this.printOutput(false, false);
 		},
 
 		calculate: function(){
@@ -72,8 +80,9 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 				}
 			}
 
-			this.printTopOutput();
-			this.printBottomOutput();
+			this.printOutput(true, true);
+			this.printOutput(false, true);
+			history.html(historyDOM.html());
 			canClearWithNum = true;
 		},
 
@@ -89,6 +98,8 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 				case '+':
 					switch(prevChar){
 						case '':
+							Materialize.toast('Cannot start input with +', 3000, 'toast');
+							break;
 						case '+':
 							break;
 						case '-':
@@ -98,6 +109,7 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 							txtBottom += '+';
 							break;
 					}
+					canDecimal = true;
 					break;
 				
 				case '-':
@@ -111,12 +123,13 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 							txtBottom += '-';
 							break;
 					}
+					canDecimal = true;
 					break;
 				
 				case '*':
 					switch(prevChar){
 						case '':
-							//ADD POP-UP WARNING HERE
+							Materialize.toast('Cannot start input with &Cross;', 3000, 'toast');
 							break;
 						case '+':
 							txtBottom = txtBottom.slice(0, -1) + '*';
@@ -133,12 +146,13 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 							txtBottom += '*';
 							break;
 					}
+					canDecimal = true;
 					break;
 				
 				case '/':
 					switch(prevChar){
 						case '':
-							//ADD POPUP WARNING HERE
+							Materialize.toast('Cannot start input with &divide;', 3000, 'toast');
 							break;
 						case '+':
 							txtBottom = txtBottom.slice(0, -1) + '/';
@@ -155,6 +169,7 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 							txtBottom += '/';
 							break;
 					}
+					canDecimal = true;
 					break;
 
 				case '.':
@@ -167,33 +182,41 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 
 			canClearWithNum = false;
 
-			this.printTopOutput();
-			this.printBottomOutput();
+			this.printOutput(true, false);
+			this.printOutput(false, false);
 		},
 
 		decimal: function(){
-			//only allow 1 decimal point per number
-			//TODO
-			console.log(canClearWithNum);
 			if (canClearWithNum){
 				txtBottom = '';
+				canDecimal = true;
 			}
 
-			txtBottom += ".";
-			this.printBottomOutput(txtBottom);
+			//only allow 1 decimal point per number
+			if (canDecimal){
+				txtBottom += ".";
+				canDecimal = false;
+			} else {
+				Materialize.toast('Please use one decimal point per number.', 3000, 'toast');
+			}
+		},
+
+		clearHistory: function(){
+			history.html('');
 		},
 
 		allClear: function(){
 			this.clearEntry();
 			txtTop = '';
-			this.printTopOutput(txtTop);
+			this.printOutput(true, false);
 		},
 
 		clearEntry: function(){
 			canClear = false;
 			canClearWithNum = false;
+			canDecimal = true;
 			txtBottom = '';
-			this.printBottomOutput(txtBottom);
+			this.printOutput(false, false);
 		},
 
 		backspace: function(){
@@ -202,23 +225,28 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM){
 					canClear = false;
 					txtBottom = '';
 				} else {
+					var prevChar = txtBottom.charAt(txtBottom.length-1);
+
+					if (prevChar === '.'){
+						txtBottom = txtBottom.slice(0, -1);
+						canDecimal = true;
 					//check if +-Infinity to delete the entire word
-					if (txtBottom.charAt(txtBottom.length-1) === 'y'){
+					} else if (prevChar === 'y'){
 						txtBottom = '';
 						canClearWithNum = false;
 					} else {
 						txtBottom = txtBottom.slice(0, -1);
-						canClearWithNum = (txtBottom.charAt(txtBottom.length-1) === 'y') ? true : false;
+						canClearWithNum = (prevChar === 'y') ? true : false;
 					}
 				}
-				this.printBottomOutput(txtBottom);
+				this.printOutput(false, false);
 			}
 		}
 	};
 };
 
 $(document).ready(function(){
-	var myCalculator = new Calculator(14, $('#output-top'), $('#output-bottom'));
+	var myCalculator = new Calculator(14, $('#output-top'), $('#output-bottom'), $('#history-text'));
 
 	//0-9
 	$('.num').on('click', function(){
@@ -239,6 +267,9 @@ $(document).ready(function(){
 				break;
 			case 'backspace':
 				myCalculator.backspace();
+				break;
+			case 'history':
+				myCalculator.clearHistory();
 				break;
 			case '+':
 			case '-':
@@ -326,6 +357,10 @@ $(document).ready(function(){
 			case 13:
 			case 61:
 				$('#equals').click();
+				break;
+			case 104:
+			case 113:
+				$('#history').click();
 				break;
 		}
 	});

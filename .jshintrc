@@ -2,6 +2,7 @@
     "globals": {
         "$": false,
         "document": false,
-        "console": false
+        "console": false,
+        "Materialize": false
     }
 }
