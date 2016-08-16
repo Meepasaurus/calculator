@@ -17,6 +17,9 @@ JS Calculator [WIP]
 
 - Includes Gulp build scripts.
 
+Unminified CodePen version: http://codepen.io/Meepasaurus/full/akrJQG/
+----------------------------------------------------------------------
+
 Future TODO
 -----------
 
