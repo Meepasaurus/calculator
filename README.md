@@ -5,7 +5,7 @@ JS Calculator [WIP]
 
 - Prevents leading operations except `-` and removes leading zeros and trailing operations. Avoids common input errors by overwriting illegal adjacent operations such as `1*/`, and only allows one `.` per number. Rarer input errors (for example, by typing `1*+/2`) print `Invalid input.` to avoid confusing the user with too many automatic input edits.
 
-- Prevents mismatched parenthesis and automatically closes unclosed ones.
+- Prevents mismatched parentheses and automatically closes unclosed ones. `1(2)(3)4` is computed as `1*(2)*(3)*4`.
 
 - Calculations such as `0/0` that result in `NaN` print `That's undefined.`.
 
@@ -20,4 +20,4 @@ TODO
 
 - fix . errors after deletes
 
-- add additional operations (sqrt, sin, cos, tan, log, ^)
+- add additional operations (^)

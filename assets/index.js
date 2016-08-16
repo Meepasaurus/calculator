@@ -8,7 +8,8 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 		txtTop = '', //for internal calculations
 		txtBottom = '',
 		stripEndArr = ['+', '-', '*', '/'], //ignored input endings
-		unclosedParens = 0, //parenthesis counter
+		backArr = ['n', 's', 'g'], //used to delete 'sin(', 'cos(', 'tan(', and 'log('
+		unclosedParens = 0, //parentheses counter
 		canDecimal = true, //can input a .
 		canClearWithNum = false, //used to clear input when typing a number immediately after a calculation
 		canClear = false; //used to clear input after an error
@@ -62,11 +63,18 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 					return Number(x);
 				});
 
-				//add unclosed parenthesis
+				//add unclosed parentheses
 				while (unclosedParens > 0){
 					txtBottom += ')';
 					unclosedParens--;
 				}
+
+				//add Math methods
+				txtBottom = txtBottom.replace(/sin/g, 'Math.sin');
+				txtBottom = txtBottom.replace(/cos/g, 'Math.cos');
+				txtBottom = txtBottom.replace(/tan/g, 'Math.tan');
+				txtBottom = txtBottom.replace(/log/g, 'Math.log');
+				txtBottom = txtBottom.replace(/&radic;/g, 'Math.sqrt');
 
 				//insert implied * for cases such as 1(1)1
 				txtBottom = txtBottom.replace(/[\d\.]\(|\)[\d\.]|\)\(/g, function(x){
@@ -74,9 +82,18 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 					x.splice(1, 0, '*');
 					return x.join('');
 				});
+
+				//insert implied * for cases such as 1Math.sin(3)Math.sin(2)
+				txtBottom = txtBottom.replace(/[\d\.]M|\)M/g, function(x){
+					x = x.split('');
+					x.splice(1, 0, '*');
+					return x.join('');
+				});
 			}
 
-			txtTop = txtBottom;
+			//pretty display
+			txtTop = txtBottom.replace(/Math\./g, '');
+			txtTop = txtTop.replace(/sqrt/g, '&radic;');
 
 			//eval on empty string throws an error
 			if (txtBottom !== ''){
@@ -200,8 +217,28 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 						unclosedParens--;
 						canDecimal = true;
 					} else {
-						Materialize.toast('Mismatched parenthesis.', 2000, 'toast');
+						Materialize.toast('Mismatched parentheses.', 2000, 'toast');
 					}
+					break;
+				case 'sin':
+					txtBottom += "sin(";
+					unclosedParens++;
+					break;
+				case 'cos':
+					txtBottom += "cos(";
+					unclosedParens++;
+					break;
+				case 'tan':
+					txtBottom += "tan(";
+					unclosedParens++;
+					break;
+				case 'log':
+					txtBottom += "log(";
+					unclosedParens++;
+					break;
+				case 'sqrt':
+					txtBottom += "&radic;(";
+					unclosedParens++;
 					break;
 				
 				default:
@@ -277,6 +314,20 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 					}
 					
 					prevChar = txtBottom.charAt(txtBottom.length-1);
+
+					//delete sin/cos/tan/log
+					if (backArr.indexOf(prevChar) !== -1){
+						txtBottom = txtBottom.slice(0, -3);
+						prevChar = txtBottom.charAt(txtBottom.length-1);						
+					}
+
+					//delete sqrt (&radic;)
+					console.log(prevChar);
+					if (prevChar === ';'){
+						txtBottom = txtBottom.slice(0, -7);
+						prevChar = txtBottom.charAt(txtBottom.length-1);							
+					}
+
 					canClearWithNum = (prevChar === 'y') ? true : false;
 				}
 				
@@ -412,6 +463,9 @@ $(document).ready(function(){
 			case 13:
 			case 61:
 				$('#equals').click();
+				break;
+			case 92:
+				$('#ce').click();
 				break;
 			case 94:
 				$('#caret').click();
