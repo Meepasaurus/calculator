@@ -66,12 +66,12 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 					unclosedParens--;
 				}
 
-				//add Math methods
-				txtBottom = txtBottom.replace(/sin/g, 'Math.sin');
-				txtBottom = txtBottom.replace(/cos/g, 'Math.cos');
-				txtBottom = txtBottom.replace(/tan/g, 'Math.tan');
-				txtBottom = txtBottom.replace(/log/g, 'Math.log');
-				txtBottom = txtBottom.replace(/&radic;/g, 'Math.sqrt');
+				//add Math methods - others needed if not using math.js' eval()
+				//txtBottom = txtBottom.replace(/sin/g, 'Math.sin');
+				//txtBottom = txtBottom.replace(/cos/g, 'Math.cos');
+				//txtBottom = txtBottom.replace(/tan/g, 'Math.tan');
+				//txtBottom = txtBottom.replace(/log/g, 'Math.log');
+				txtBottom = txtBottom.replace(/&radic;/g, 'sqrt');
 
 				//insert implied * for cases such as 1(1)1
 				txtBottom = txtBottom.replace(/[\d\.]\(|\)[\d\.]|\)\(/g, function(x){
@@ -80,8 +80,8 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 					return x.join('');
 				});
 
-				//insert implied * for cases such as 1Math.sin(3)Math.sin(2)
-				txtBottom = txtBottom.replace(/[\d\.]M|\)M/g, function(x){
+				//insert implied * for cases such as 1sin(3)cos(2)
+				txtBottom = txtBottom.replace(/[\d\.][sctl]|\)[sctl]/g, function(x){
 					x = x.split('');
 					x.splice(1, 0, '*');
 					return x.join('');
@@ -95,7 +95,7 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 			//eval on empty string throws an error
 			if (txtBottom !== ''){
 				try {
-					var answer = Number(Number(eval(txtBottom).toFixed(14)).toPrecision(16)).toString();
+					var answer = Number(Number(math.eval(txtBottom).toFixed(14)).toPrecision(16)).toString();
 					if (isNaN(answer)){
 						txtBottom = 'That\'s undefined.';
 						canClear = true;
@@ -215,6 +215,16 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 						unclosedParens--;
 					} else {
 						Materialize.toast('Mismatched parentheses.', 2000, 'toast');
+					}
+					break;
+				case '^':
+					switch(prevChar){
+						case '^':
+							Materialize.toast('Cannot use two ^ in a row.', 2000, 'toast');	
+							break;
+						default:
+							txtBottom += '^';
+							break;
 					}
 					break;
 				case 'sin':
