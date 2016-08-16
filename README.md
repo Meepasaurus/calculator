@@ -18,6 +18,4 @@ JS Calculator [WIP]
 TODO
 ----
 
-- fix . errors after deletes
-
 - add additional operations (^)

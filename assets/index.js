@@ -10,7 +10,6 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 		stripEndArr = ['+', '-', '*', '/'], //ignored input endings
 		backArr = ['n', 's', 'g'], //used to delete 'sin(', 'cos(', 'tan(', and 'log('
 		unclosedParens = 0, //parentheses counter
-		canDecimal = true, //can input a .
 		canClearWithNum = false, //used to clear input when typing a number immediately after a calculation
 		canClear = false; //used to clear input after an error
 
@@ -46,13 +45,11 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 			}
 
 			txtBottom += num;
-
 			this.printOutput(false, false);
 		},
 
 		calculate: function(){
 			if (txtBottom !== ''){
-
 				//remove trailing operations
 				while (stripEndArr.indexOf((txtBottom.charAt(txtBottom.length-1))) !== -1 ){
 					txtBottom = txtBottom.slice(0, -1);
@@ -139,7 +136,6 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 							txtBottom += '+';
 							break;
 					}
-					canDecimal = true;
 					break;
 				
 				case '-':
@@ -153,7 +149,6 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 							txtBottom += '-';
 							break;
 					}
-					canDecimal = true;
 					break;
 				
 				case '*':
@@ -172,11 +167,13 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 						case '/':
 							txtBottom = txtBottom.slice(0, -1) + '*';
 							break;
+						case '(':
+							Materialize.toast('Cannot use &Cross; after (', 2000, 'toast');
+							break;
 						default:
 							txtBottom += '*';
 							break;
 					}
-					canDecimal = true;
 					break;
 				
 				case '/':
@@ -195,11 +192,13 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 						case '*':
 							txtBottom = txtBottom.slice(0, -1) + '/';
 							break;
+						case '(':
+							Materialize.toast('Cannot use &divide; after (', 2000, 'toast');
+							break;
 						default:
 							txtBottom += '/';
 							break;
 					}
-					canDecimal = true;
 					break;
 
 				case '.':
@@ -209,13 +208,11 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 				case '(':
 					txtBottom += '(';
 					unclosedParens++;
-					canDecimal = true;
 					break;
 				case ')':
 					if (unclosedParens > 0){
 						txtBottom += ')';
 						unclosedParens--;
-						canDecimal = true;
 					} else {
 						Materialize.toast('Mismatched parentheses.', 2000, 'toast');
 					}
@@ -246,7 +243,6 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 			}
 
 			canClearWithNum = false;
-
 			this.printOutput(true, false);
 			this.printOutput(false, false);
 		},
@@ -254,15 +250,19 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 		decimal: function(){
 			if (canClearWithNum){
 				txtBottom = '';
-				canDecimal = true;
+			}
+
+			//check if current ending of input is a number with a decimal in it
+			var foundDecimal = txtBottom.match(/\.\d*$/);
+			if (txtBottom === ''){
+				foundDecimal = null;
 			}
 
 			//only allow 1 decimal point per number
-			if (canDecimal){
-				txtBottom += ".";
-				canDecimal = false;
-			} else {
+			if (foundDecimal){
 				Materialize.toast('Please use one decimal point per number.', 2000, 'toast');
+			} else {
+				txtBottom += ".";
 			}
 		},
 
@@ -279,7 +279,6 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 		clearEntry: function(){
 			canClear = false;
 			canClearWithNum = false;
-			canDecimal = true;
 			txtBottom = '';
 			this.printOutput(false, false);
 		},
@@ -295,7 +294,6 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 					switch(prevChar){
 						case '.':
 							txtBottom = txtBottom.slice(0, -1);
-							canDecimal = true;
 							break;
 						case '(':
 							unclosedParens--;
