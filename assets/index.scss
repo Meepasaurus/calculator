@@ -3,19 +3,15 @@
 }
 
 body {
-	padding: 75px 0;
+	padding: 50px 0;
 	font-family: 'Roboto', sans-serif;
+	background-color: #90a4ae;
 }
 
 h2 {
 	margin: 0;
 	padding: 10px;
 	font-size: 35px;
-}
-
-#toast-container {
-	bottom: 10%;
-	left: 0;
 }
 
 .toast {
@@ -31,7 +27,6 @@ h2 {
 	max-width: 900px;
 	width: 100%;
 	margin: 0 auto;
-	background-color: white;
 }
 
 .calc-container {
@@ -55,7 +50,7 @@ h2 {
 		width: 100%;
 		margin: 0;
 		word-wrap: break-word;
-		text-align: left;
+		text-align: right;
 
 		&:first-of-type {
 			min-height: 40px;

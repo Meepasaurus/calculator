@@ -7,7 +7,7 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 		history = historyDOM,
 		txtTop = '', //for internal calculations
 		txtBottom = '',
-		stripEndArr = ['+', '-', '*', '/', '.'], //ignored input endings
+		stripEndArr = ['+', '-', '*', '/'], //ignored input endings
 		unclosedParens = 0, //parenthesis counter
 		canDecimal = true, //can input a .
 		canClearWithNum = false, //used to clear input when typing a number immediately after a calculation
@@ -19,13 +19,17 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 				//print top
 				outputTop.html(txtTop === '' ? '&nbsp;' : '&gt;' + txtTop);
 				if (printHistory){
-					history.append($('<p class="flow-text">').html(outputTop.html()));
+					if (txtBottom !== ''){
+						history.prepend($('<p class="flow-text">').html(outputTop.html()));
+					}
 				}
 			} else {
 				//print bottom
 				outputBottom.html(txtBottom === '' ? '&nbsp;' : txtBottom);
 				if (printHistory){
-					history.append($('<p class="flow-text">').html(outputBottom.html()));
+					if (txtBottom !== ''){
+						history.prepend($('<p class="flow-text">').html(outputBottom.html()));
+					}
 				}
 			}
 		},
@@ -42,25 +46,35 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 
 			txtBottom += num;
 
-			/*
-			//prevent leading zeroes
-			if (txtBottom.charAt(0) === '0' && txtBottom.indexOf('.') === -1){
-				txtBottom = num;
-			} else {
-				txtBottom += num;
-			}
-			*/
-
 			this.printOutput(false, false);
 		},
 
 		calculate: function(){
-			//remove trailing operations
-			while (stripEndArr.indexOf((txtBottom.charAt(txtBottom.length-1))) !== -1 ){
-				txtBottom = txtBottom.slice(0, -1);
-			}
+			if (txtBottom !== ''){
 
-			//ADD CHECKS FOR UNCLOSED PARENS HERE
+				//remove trailing operations
+				while (stripEndArr.indexOf((txtBottom.charAt(txtBottom.length-1))) !== -1 ){
+					txtBottom = txtBottom.slice(0, -1);
+				}
+
+				//remove trailing zeros
+				txtBottom = txtBottom.replace(/\d+(?:\.\d+)?/g, function(x){
+					return Number(x);
+				});
+
+				//add unclosed parenthesis
+				while (unclosedParens > 0){
+					txtBottom += ')';
+					unclosedParens--;
+				}
+
+				//insert implied * for cases such as 1(1)1
+				txtBottom = txtBottom.replace(/[\d\.]\(|\)[\d\.]|\)\(/g, function(x){
+					x = x.split('');
+					x.splice(1, 0, '*');
+					return x.join('');
+				});
+			}
 
 			txtTop = txtBottom;
 
@@ -80,9 +94,8 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 				}
 			}
 
-			this.printOutput(true, true);
 			this.printOutput(false, true);
-			history.html(historyDOM.html());
+			this.printOutput(true, true);
 			canClearWithNum = true;
 		},
 
@@ -98,7 +111,7 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 				case '+':
 					switch(prevChar){
 						case '':
-							Materialize.toast('Cannot start input with +', 3000, 'toast');
+							Materialize.toast('Cannot start input with +', 2000, 'toast');
 							break;
 						case '+':
 							break;
@@ -129,7 +142,7 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 				case '*':
 					switch(prevChar){
 						case '':
-							Materialize.toast('Cannot start input with &Cross;', 3000, 'toast');
+							Materialize.toast('Cannot start input with &Cross;', 2000, 'toast');
 							break;
 						case '+':
 							txtBottom = txtBottom.slice(0, -1) + '*';
@@ -152,7 +165,7 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 				case '/':
 					switch(prevChar){
 						case '':
-							Materialize.toast('Cannot start input with &divide;', 3000, 'toast');
+							Materialize.toast('Cannot start input with &divide;', 2000, 'toast');
 							break;
 						case '+':
 							txtBottom = txtBottom.slice(0, -1) + '/';
@@ -174,6 +187,21 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 
 				case '.':
 					this.decimal();
+					break;
+
+				case '(':
+					txtBottom += '(';
+					unclosedParens++;
+					canDecimal = true;
+					break;
+				case ')':
+					if (unclosedParens > 0){
+						txtBottom += ')';
+						unclosedParens--;
+						canDecimal = true;
+					} else {
+						Materialize.toast('Mismatched parenthesis.', 2000, 'toast');
+					}
 					break;
 				
 				default:
@@ -197,7 +225,7 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 				txtBottom += ".";
 				canDecimal = false;
 			} else {
-				Materialize.toast('Please use one decimal point per number.', 3000, 'toast');
+				Materialize.toast('Please use one decimal point per number.', 2000, 'toast');
 			}
 		},
 
@@ -227,18 +255,31 @@ var Calculator = function(numberPrecision, outputTopDOM, outputBottomDOM, histor
 				} else {
 					var prevChar = txtBottom.charAt(txtBottom.length-1);
 
-					if (prevChar === '.'){
-						txtBottom = txtBottom.slice(0, -1);
-						canDecimal = true;
-					//check if +-Infinity to delete the entire word
-					} else if (prevChar === 'y'){
-						txtBottom = '';
-						canClearWithNum = false;
-					} else {
-						txtBottom = txtBottom.slice(0, -1);
-						canClearWithNum = (prevChar === 'y') ? true : false;
+					switch(prevChar){
+						case '.':
+							txtBottom = txtBottom.slice(0, -1);
+							canDecimal = true;
+							break;
+						case '(':
+							unclosedParens--;
+							txtBottom = txtBottom.slice(0, -1);
+							break;
+						case ')':
+							unclosedParens++;
+							txtBottom = txtBottom.slice(0, -1);
+							break;
+						case 'y':
+							txtBottom = '';
+							break;
+						default:
+							txtBottom = txtBottom.slice(0, -1);
+							break;
 					}
+					
+					prevChar = txtBottom.charAt(txtBottom.length-1);
+					canClearWithNum = (prevChar === 'y') ? true : false;
 				}
+				
 				this.printOutput(false, false);
 			}
 		}
@@ -276,6 +317,14 @@ $(document).ready(function(){
 			case '*':
 			case '/':
 			case '.':
+			case '(':
+			case ')':
+			case '^':
+			case 'sqrt':
+			case 'sin':
+			case 'cos':
+			case 'tan':
+			case 'log':
 				myCalculator.operate(dataInput);
 				break;
 			case '=':
@@ -300,11 +349,17 @@ $(document).ready(function(){
 
 	//keyboard
 	$(document).on('keypress', function(e){
-		console.log('keypress ' + e.which);
+		//console.log('keypress ' + e.which);
 		switch(e.which){
 			case 8:
 				//prevent browser from going back in FF
 				e.preventDefault();
+				break;
+			case 40:
+				$('#lp').click();
+				break;
+			case 41:
+				$('#rp').click();
 				break;
 			case 120:
 			case 42:
@@ -358,9 +413,27 @@ $(document).ready(function(){
 			case 61:
 				$('#equals').click();
 				break;
+			case 94:
+				$('#caret').click();
+				break;
+			case 99:
+				$('#cos').click();
+				break;
 			case 104:
 			case 113:
 				$('#history').click();
+				break;
+			case 108:
+				$('#log').click();
+				break;
+			case 114:
+				$('#sqrt').click();
+				break;
+			case 115:
+				$('#sin').click();
+				break;
+			case 116:
+				$('#tan').click();
 				break;
 		}
 	});
