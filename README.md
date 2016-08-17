@@ -1,5 +1,5 @@
-JS Calculator [WIP]
-===================
+JS Calculator
+=============
 
 - After doing a bit of research on floating-point rounding errors, I decided to use a precision of 14 decimal places. This can be set when creating the Calculator object. The total number of digits is limited to 16. `0.1 + 0.2 = 0.3` instead of JavaScript's usual output of `0.30000000000000004`.
 
@@ -19,6 +19,8 @@ JS Calculator [WIP]
 
 Unminified CodePen version: http://codepen.io/Meepasaurus/full/akrJQG/
 ----------------------------------------------------------------------
+
+- Please note that Codepen is currently acting a little strangely and may require you to click on the calculator UI before it registers key presses. This issue is not present in the standalone version.
 
 Future TODO
 -----------
